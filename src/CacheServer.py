@@ -9,8 +9,8 @@ class CacheServer(object):
     def __init__(self, num, space):
         self.id = num
         self.max_capacity = self.free_space = space
-        self.videos = []
-        self.endpoints = []
+        self.videos = {}
+        self.endpoints = {}
 
     def __str__(self):
         return str(self.id) + " " + self.print_videos()
@@ -26,25 +26,17 @@ class CacheServer(object):
         if self.can_fit_video(video_size):
             self.free_space = self.free_space - video_size
             if not self.find_video(id_video):
-                self.videos.append({'id': id_video, 'space': video_size})
+                self.videos[id_video] = video_size
 
     def find_video(self, id_video):
-        l_videos = filter(lambda e: e['id'] == id_video, self.videos)
-        if len(l_videos) > 0:
-            return l_videos[0]
-        else:
-            return None
+        return self.videos.get(id_video, None)
 
     def remove_video(self, id_video):
-        video = self.find_video(id_video)
-        if video:
-            self.free_space += video['space']
-            self.videos.remove(video)
+        del self.videos[id_video]
 
     def print_videos(self):
-        ids = map(lambda e: str(e['id']), self.videos)
-        return ' '.join(ids)
+        return ' '.join(self.videos.keys())
 
     # ----- Treating connected endpoints :) -----
     def add_endpoint(self, endpoint, latency):
-        self.endpoints.append({'endpoint': endpoint, 'latency': latency})
+        self.endpoints[endpoint] = latency

@@ -71,21 +71,20 @@ def calculate_best_videos_for_cache(cache):
     print "Calculating cache %i from %i (%f %%)" % (cache.id, len(caches), (float(cache.id) / len(caches))*100)
     d_videos = {}
     for endpoint in cache.endpoints:
-        for request in endpoint['endpoint'].requests:
-            video_id = request['video']
-            latency = endpoint['endpoint'].datacenter_latency - endpoint['endpoint'].get_latency_for_cache(cache.id)
-            requests = request['requests']
-            print "Testing video %i" % video_id
+        for video_id, requests in endpoint.requests.items():
+            latency = endpoint.datacenter_latency - endpoint.get_latency_for_cache(cache.id)
+            #print "Testing video %i" % video_id
             if video_id not in d_videos:
                 d_videos[video_id] = {'requests': requests, 'latency': latency, 'size': videos[video_id].size}
             else:
-                current_requests = d_videos[video_id]['requests']
-                current_latency = d_videos[video_id]['latency']
-                print "Current latency: %f. New latency: %i" % (current_latency, latency)
-                d_videos[video_id]['latency'] = (current_latency * current_requests + latency * requests) / (
+                dv = d_videos[video_id]
+                current_requests = dv['requests']
+                current_latency = dv['latency']
+                #print "Current latency: %f. New latency: %i" % (current_latency, latency)
+                dv['latency'] = (current_latency * current_requests + latency * requests) / (
                     current_requests + requests)
-                print "Result latency: %f" % d_videos[video_id]['latency']
-                d_videos[video_id]['requests'] += requests
+                #print "Result latency: %f" % d_videos[video_id]['latency']
+                dv['requests'] += requests
 
                 # Now we have all the videos with their added requests (all requests that CAN be routed to this cache).
                 # So we will just optimize the most videos possible.

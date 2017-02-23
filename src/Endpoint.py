@@ -11,8 +11,8 @@ class Endpoint(object):
 
     def __init__(self, num):
         self.id = num
-        self.latencies = []
-        self.requests = []
+        self.latencies = {}
+        self.requests = {}
         self.datacenter_latency = 0
 
     def __str__(self):
@@ -27,27 +27,19 @@ class Endpoint(object):
         return str(self)
 
     def add_request(self, id_video, num_requests):
-        self.requests.append({'video': id_video, 'requests': num_requests})
+        self.requests[id_video] = num_requests
 
     def add_latency(self, latency, cache=DATACENTER_KEY):
         if cache == DATACENTER_KEY:
             self.datacenter_latency = latency
         else:
-            self.latencies.append({'cache': cache, 'latency': latency})
+            self.latencies[cache] = latency
 
     def get_latency_for_cache(self, cache=DATACENTER_KEY):
         if cache == DATACENTER_KEY:
             return self.datacenter_latency
         else:
-            latencies = filter(lambda e: e['cache'] == cache, self.latencies)
-            if len(latencies) > 0:
-                return latencies[0]['latency']
-            else:
-                return -1
+            return self.latencies.get(cache, -1)
 
     def get_requests_for_video(self, video):
-        videos = filter(lambda e: e['video'] == video, self.requests)
-        if len(videos) > 0:
-            return videos[0]['requests']
-        else:
-            return -1
+        return self.requests.get(video, -1)
