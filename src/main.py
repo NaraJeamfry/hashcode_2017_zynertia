@@ -17,12 +17,16 @@ from src.Video import Video
 __author__ = "Xavi Moreno, Francesc Recasens, Marc López"
 __credits__ = ['Xavi Moreno', 'Francesc Recasens', 'Marc López']
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 __status__ = 'Development'
 
 caches = []
 videos = []
 endpoints = []
+
+latency_weight = 100
+requests_weight = 0
+size_weight = 0
 
 
 def write_file(filename):
@@ -49,10 +53,13 @@ def score_for_cache_video(video_data):
     requests = video_data['requests']
     weighted_latency = video_data['latency']
     size = video_data['size']
+
+    # print weighted_latency
+
     # other_caches_score = ???
     # TODO: Calculate the score gained by other caches
 
-    score = requests * 100 + weighted_latency * 110 + size * 50
+    score = requests * requests_weight + weighted_latency * latency_weight + size * size_weight
 
     return score
 
@@ -61,20 +68,23 @@ def calculate_best_videos_for_cache(cache):
     """
     :type cache: CacheServer
     """
-    print "Calculating cache %i from %i (%f %%)" % (cache.id, len(caches), (float(cache.id) / len(caches)))
+    print "Calculating cache %i from %i (%f %%)" % (cache.id, len(caches), (float(cache.id) / len(caches))*100)
     d_videos = {}
     for endpoint in cache.endpoints:
         for request in endpoint['endpoint'].requests:
             video_id = request['video']
-            latency = endpoint['endpoint'].get_latency_for_cache(cache)
+            latency = endpoint['endpoint'].datacenter_latency - endpoint['endpoint'].get_latency_for_cache(cache.id)
             requests = request['requests']
+            print "Testing video %i" % video_id
             if video_id not in d_videos:
                 d_videos[video_id] = {'requests': requests, 'latency': latency, 'size': videos[video_id].size}
             else:
                 current_requests = d_videos[video_id]['requests']
                 current_latency = d_videos[video_id]['latency']
+                print "Current latency: %f. New latency: %i" % (current_latency, latency)
                 d_videos[video_id]['latency'] = (current_latency * current_requests + latency * requests) / (
                     current_requests + requests)
+                print "Result latency: %f" % d_videos[video_id]['latency']
                 d_videos[video_id]['requests'] += requests
 
                 # Now we have all the videos with their added requests (all requests that CAN be routed to this cache).
@@ -152,6 +162,8 @@ def main():
     caches, endpoints, videos = read_file(input_filename)
 
     print caches
+    for cache in caches:
+        print cache.endpoints
     print endpoints
     print videos
 
