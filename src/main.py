@@ -45,16 +45,23 @@ def calculate_best_videos_for_cache(cache):
     for endpoint in cache.endpoints:
         for request in endpoint['endpoint'].requests:
             video_id = request['video']
+            latency = endpoint['endpoint'].get_latency_for_cache(cache)
+            requests = request['requests']
             if video_id not in d_videos:
-                d_videos[video_id] = request['requests']
+                d_videos[video_id] = {'requests': requests, 'latency': latency, 'size': videos[video_id].size}
             else:
-                d_videos[video_id] += request['requests']
+                current_requests = d_videos[video_id]['requests']
+                current_latency = d_videos[video_id]['latency']
+                d_videos[video_id]['latency'] = (current_latency * current_requests + latency * requests) / (
+                    current_requests + requests)
+                d_videos[video_id]['requests'] += requests
 
-        # Now we have all the videos with their added requests (all requests that CAN be routed to this cache).
-        # So we will just optimize the most videos possible.
 
-        # TODO: Recursive algorithm to find the MOST SPACE USED (could be better solution)
-        # TODO: Weights to determine if optimizing space is more worth than optimizing latencies
+                # Now we have all the videos with their added requests (all requests that CAN be routed to this cache).
+                # So we will just optimize the most videos possible.
+
+                # TODO: Recursive algorithm to find the MOST SPACE USED (could be better solution)
+                # TODO: Weights to determine if optimizing space is more worth than optimizing latencies
 
     sorted_videos = reversed(sorted(d_videos.items(), key=operator.itemgetter(1)))
 
@@ -85,7 +92,7 @@ def read_file(file_name):
 
         endpoints = [Endpoint(_) for _ in xrange(int(endpoints))]
 
-        #parse endpoint cfg
+        # parse endpoint cfg
         for idx in xrange(len(endpoints)):
             v = f.readline().split(' ')
             ms = int(v[0])
@@ -97,7 +104,7 @@ def read_file(file_name):
                 endpoints[idx].add_latency(latency, cache_index)
                 l_caches[cache_index].add_endpoint(endpoints[idx], latency)
 
-        #parse video requests
+        # parse video requests
         for idx in xrange(int(request_descriptions)):
             video_id, endpoint_id, num_requests = (int(x) for x in f.readline().split(' '))
             endpoints[endpoint_id].add_request(video_id, num_requests)
@@ -139,6 +146,7 @@ def main():
     print caches
 
     write_file(output_filename)
+
 
 if __name__ == '__main__':
     main()
