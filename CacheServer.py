@@ -38,4 +38,4 @@ class CacheServer(object):
         return ' '.join(ids)
 
     def __str__(self):
-        return self.id + self.print_videos()
+        return str(self.id) + " " + self.print_videos()

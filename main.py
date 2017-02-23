@@ -9,6 +9,9 @@ Team Zynertia, GO!
 
 import sys
 
+from CacheServer import CacheServer
+from Endpoint import Endpoint
+
 __author__ = "Xavi Moreno, Francesc Recasens, Marc López"
 __credits__ = ['Xavi Moreno', 'Francesc Recasens', 'Marc López']
 
@@ -19,15 +22,22 @@ caches = []
 
 
 def write_file(filename):
+    global caches
+
     with open(filename, 'w') as input_file:
-        input_file.write(str(len(caches)))
+        input_file.write(str(len(caches)) + "\n")
+
         for cache in caches:
             input_file.write(
-                cache.id + " " + cache.print_videos()
+                str(cache) + "\n"
             )
 
 
-def calculate_best_videos_for_cache():
+def calculate_best_videos_for_cache(cache):
+    pass
+
+
+def calculate_cache_priorities_per_video():
     pass
 
 
@@ -49,12 +59,22 @@ def main():
     if len(sys.argv) < 3:
         sys.exit('Syntax: %s <input_filename> <output_filename>' % sys.argv[0])
 
+    global caches
+
     input_filename = sys.argv[1]
     output_filename = sys.argv[2]
 
     read_file(input_filename)
 
-    # TODO: Process data
+    caches = [CacheServer(0, 100), CacheServer(1, 100)]
+
+    for cache in caches:
+        calculate_best_videos_for_cache(cache)
+
+    caches[0].add_video(1, 100)
+    caches[0].add_video(2, 100)
+    caches[1].add_video(3, 20)
+    caches[1].add_video(4, 30)
 
     write_file(output_filename)
 
