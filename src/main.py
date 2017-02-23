@@ -61,7 +61,7 @@ def calculate_best_videos_for_cache(cache):
     """
     :type cache: CacheServer
     """
-    print "Calculating cache %i from %i (%i %%)" % (cache.id, len(caches), (float(cache.id) / len(caches)))
+    print "Calculating cache %i from %i (%f %%)" % (cache.id, len(caches), (float(cache.id) / len(caches)))
     d_videos = {}
     for endpoint in cache.endpoints:
         for request in endpoint['endpoint'].requests:
