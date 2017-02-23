@@ -61,6 +61,7 @@ def calculate_best_videos_for_cache(cache):
     """
     :type cache: CacheServer
     """
+    print "Calculating cache %i from %i (%i %%)" % (cache.id, len(caches), (float(cache.id) / len(caches)))
     d_videos = {}
     for endpoint in cache.endpoints:
         for request in endpoint['endpoint'].requests:
@@ -76,16 +77,15 @@ def calculate_best_videos_for_cache(cache):
                     current_requests + requests)
                 d_videos[video_id]['requests'] += requests
 
-
                 # Now we have all the videos with their added requests (all requests that CAN be routed to this cache).
                 # So we will just optimize the most videos possible.
 
                 # TODO: Recursive algorithm to find the MOST SPACE USED (could be better solution)
                 # TODO: Weights to determine if optimizing space is more worth than optimizing latencies
 
-    videos_points = [(video_id, score_for_cache_video(data_dict)) for video_id, data_dict in d_videos]
+    videos_points = [(video_id, score_for_cache_video(data_dict)) for video_id, data_dict in d_videos.items()]
 
-    sorted_videos = reversed(sorted(d_videos.items(), key=operator.itemgetter(1)))
+    sorted_videos = reversed(sorted(videos_points, key=operator.itemgetter(1)))
 
     full = False
     for video in sorted_videos:
@@ -152,8 +152,6 @@ def main():
     caches, endpoints, videos = read_file(input_filename)
 
     print caches
-    for cache in caches:
-        print cache.endpoints
     print endpoints
     print videos
 
