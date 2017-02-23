@@ -6,5 +6,6 @@ __author__ = 'Francesc Recasens'
 
 
 class Video(object):
-    def __init__(self):
-        pass
+    def __init__(self, num, size):
+        self.id = num
+        self.size = size
