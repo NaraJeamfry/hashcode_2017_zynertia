@@ -37,6 +37,26 @@ def write_file(filename):
             )
 
 
+def score_for_cache_video(video_data):
+    """
+    :param video_data: Contains the data gathered for this video.
+     video_data["requests"]: count of requests
+     video_data["size"]: size of the video
+     video_data["latency"]: the weighted mean of the latencies to connected endpoints
+    :return: score for this video (to this cache)
+    """
+    score = 0
+    requests = video_data['requests']
+    weighted_latency = video_data['latency']
+    size = video_data['size']
+    # other_caches_score = ???
+    # TODO: Calculate the score gained by other caches
+
+    score = requests * 100 + weighted_latency * 110 + size * 50
+
+    return score
+
+
 def calculate_best_videos_for_cache(cache):
     """
     :type cache: CacheServer
@@ -56,6 +76,8 @@ def calculate_best_videos_for_cache(cache):
         # TODO: Recursive algorithm to find the MOST SPACE USED (could be better solution)
         # TODO: Weights to determine if optimizing space is more worth than optimizing latencies
 
+    videos_points = [(video_id, score_for_cache_video(data_dict)) for video_id, data_dict in d_videos]
+
     sorted_videos = reversed(sorted(d_videos.items(), key=operator.itemgetter(1)))
 
     full = False
@@ -65,10 +87,6 @@ def calculate_best_videos_for_cache(cache):
             break
         if cache.can_fit_video(videos[video_id].size):
             cache.add_video(video_id, videos[video_id].size)
-
-
-def calculate_cache_priorities_per_video():
-    pass
 
 
 def read_file(file_name):
