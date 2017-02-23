@@ -15,6 +15,9 @@ class CacheServer(object):
     def __str__(self):
         return str(self.id) + " " + self.print_videos()
 
+    def __repr__(self):
+        return str(self)
+
     # ----- Treating videos -----
     def can_fit_video(self, size):
         return self.free_space - size >= 0
